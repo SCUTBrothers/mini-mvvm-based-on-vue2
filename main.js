@@ -16,6 +16,5 @@ const app = new Vue({
     }
 })
 
-console.log(app.name)
 app.name = "Jack"
-console.log(app.name)
+app.name = "Daisy"
