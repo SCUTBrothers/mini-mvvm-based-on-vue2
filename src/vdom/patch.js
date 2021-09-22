@@ -25,6 +25,7 @@ function createElement(vnode) {
     
     if (tag) {
         vnode.el = document.createElement(tag)
+        setAttributes(vnode.el, vnode.data)
         children.forEach(child => {
             vnode.el.appendChild(createElement(child))
         })
@@ -33,4 +34,10 @@ function createElement(vnode) {
     }
 
     return vnode.el
+}
+
+function setAttributes(el, data) {
+    for (const [key, value] of Object.entries(data)) {
+        el.setAttribute(key, value)
+    }
 }

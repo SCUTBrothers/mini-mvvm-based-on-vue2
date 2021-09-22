@@ -5,16 +5,17 @@ const app = new Vue({
     template: `<div class="todolist-wrapper">
         Hello {{ name }}, this is tasks of today: 
         <ul class="todolist-container">
-            <li class="done"></li>
-            <li class="todo"></li>
+            <li class="done">{{ task1 }}</li>
+            <li class="undo">{{ task2 }}</li>
             <li class="todo"></li>
         </ul>
         another text
     </div>`,
     data: {
-        name: "Nicholas"
+        name: "Nicholas",
+        task1: "running",
+        task2: "reading"
     }
 })
 
-app.name = "Jack"
-app.name = "Daisy"
+app.task2 = "swimming"
