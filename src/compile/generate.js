@@ -19,14 +19,14 @@ function generateText(text) {
   while (match) {
     tokens.push("'" + text.slice(preIndex, match.index) + "'")
     tokens.push(`_s(${match[1].trim()})`)
-
     preIndex = mustache.lastIndex
     match = mustache.exec(text)
   }
 
   if (preIndex < text.length) {
-    tokens.push(text.slice(preIndex))
+    tokens.push("'" + text.slice(preIndex) + "'")
   }
+  console.log(tokens)
   return tokens.join('+')
 }
 

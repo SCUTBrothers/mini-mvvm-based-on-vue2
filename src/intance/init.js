@@ -1,4 +1,5 @@
 import {compileToRenderFunction} from "../compile/index.js"
+import { initState } from "../state.js"
 import {mountComponent} from "./lifecycle.js"
 
 export function initMixin(Vue) {
@@ -7,6 +8,7 @@ export function initMixin(Vue) {
 
     vm.$options = options
 
+    initState(vm)
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
