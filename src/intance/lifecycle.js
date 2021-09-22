@@ -1,4 +1,5 @@
 import { patch } from "../vdom/patch.js"
+import Watcher from "../reactivity/watcher.js"
 
 export function lifecycleMixin(Vue) {
   Vue.prototype._update = function (vnode) {
@@ -18,12 +19,10 @@ export function mountComponent(vm, el) {
     )
   }
 
-  console.log('before Mounted')
-
   const updateComponent = () => {
     let vnode  = vm._render()
     vm._update(vnode)
   }
 
-  updateComponent()
+  new Watcher(vm, updateComponent)
 }
