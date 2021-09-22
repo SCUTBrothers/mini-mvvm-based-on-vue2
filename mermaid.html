@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .mermaid {
+            width: 300%;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true,
+            securityLevel: "loose", "theme": "neutral",
+            flowchart: {
+                htmlLabels: false,
+                useMaxWidth:true,
+                curve: "cardinal"
+            },
+            htmlLabels: false,
+            defaultRender: "dagre-wrapper"
+        });
+    </script>
+    <div class="mermaid">
+    %%{init: {'themeVariables': { 'primaryColor': '#99b898', "fontFamily": "Courier"}}}%%
+    flowchart TD
+        %% style
+        classDef entry fill: #cfe5cf
+        classDef Vue fill: #fb7813, color: white
+        classDef vm fill:#99b898, color: white
+        classDef func stroke: #f876aa
+        classDef method fill: #f5b462
+        classDef module stroke: purple, fill: #f6def6
+        classDef text fill: red
+        classDef element fill: blue
+
+        start([start])
+        style start fill: lightblue
+        start --> importVue --> options -->|输入|Vue -->|实例化|vm
+
+        %% entry 
+        subgraph entry ["@entry main.js: 入口文件"]
+            importVue[/"import Vue"\] 
+
+            %% input options
+            subgraph optionsSub ["@input options: input options of new Vue(options)"]
+                options["@input options: 相当于配置"]
+                el["el: root container selector"]
+
+                %% template
+                subgraph template [template]
+                    dom["<div>
+                            Hello, {{ name }}, this is your message
+                            <div> 
+                                <h1>scond degree</h1>
+                            </div>
+                        </div>"]
+                end
+                
+                options --x template
+                options --x el
+            end
+
+        end
+        class entry entry
+
+
+
+
+
+        subgraph compileModule ["@module: 将template转为render函数"]
+           compileToRenderFunction["@func compileToRenderFunction: 将template转为render函数"]
+                    
+            %% 将template转为树结构的节点信息
+            parseHTML["@func: parseHTML(template)", note: ast解析]
+
+            compileToRenderFunction -->|调用|parseHTML
+
+            subgraph ast ["ast: 以树结构展示的template信息"]
+                textNode["textNode: {
+                    type: 3,
+                    text: ...(不解析模板语法{{}}), 
+                }"]
+
+                elementNode["elementNode: {
+                    type: 1,
+                    tagName: ...,
+                    attrs: [...],
+                    children: [
+                        ... elementNode or textNode
+                    ], 
+                }"]
+
+                两种节点 --> textNode & elementNode
+            end
+
+            generate["@func generate: 创建render函数"]
+
+        end
+        class compileModule module
+        class parseHTML func
+        class generate func
+
+        subgraph render ["@func render: 栈形式的嵌套函数"]
+            render_func["func body: 
+                with(this)  {
+                    return _c('tagName', _v('text piece + _s({{mustache var}}) + ...'), children of elementNode)
+                }
+            "]
+        end
+
+        template -.->|输入|parseHTML -->|输出|ast -->|输入|generate -->|输出|render
+
+
+        %% init.js
+
+        subgraph initModule ["@module init.js: 汇聚render相关的初始化方法"]
+            initMixin["@func initMixin: 为Vue添加_init实例方法"]
+            subgraph _initFunc ["@method _init(options): 初始化vm实例"]
+                _init["@method _init(options): 初始化vm实例"]
+
+
+                _init -->|1. set: 属性挂载|options -.-|link, set in _init| $options
+                _init -->|2. 调用|$mount-->|调用|compileToRenderFunction & mountComponent
+            end
+
+            subgraph $mountFunc ["@method $mount(el): 挂载..."]
+                $mount["@method $mount(el): 挂载..."]
+
+                $mount -->|1. get: template|$options -.-|get in $mount| template
+                $mount -->|2. 调用: compileToRenderFunction, 输入template, 生成render函数|compileToRenderFunction
+                $mount -->|3. set: 属性挂载|render -.-|link, set in $mount|$option_render
+                $mount -->|4. 调用: mountComponent|mountComponent
+            end
+
+            initMixin -.-|导入挂载|_init
+        end
+        class initModule module
+
+        %% render.js
+
+        subgraph renderModule ["@module render.js: 汇聚render相关的方法"]
+            renderMixin["@func renderMixin: 为Vue挂载_render实例方法"]
+            _c["@method _c(tagName, attrs, _c..."]
+            _v["@method _v( 'text...'+_s(...)+... )"]
+            _s["@method _s(mustache var)"]
+            _render["@method _render: 生成虚拟节点树"]
+
+            createElement["@func createElement"]
+            createTextNode["@func createTextNode"]
+            
+            renderMixin -.-|导入挂载| _c & _v & _s & _render
+        end
+        class renderModule module
+
+        subgraph lifeCycleModule ["@module lifeCycle.js: 汇聚生命周期相关的方法"]
+            lifeCycleMixin["@func lifeCycleMixin: 为Vue挂载_update方法"]
+            _update["@method _update(vm._render()): diff前后更新前后虚拟节点差异, 将虚拟节点树渲染成真实节点树"]
+
+            subgraph mountComponentFunc ["@func mountComponent: 挂载元素到rootContainer当中"]
+                mountComponent["@func mountComponent: 挂载元素到rootContainer当中"]
+
+                subgraph udpateComponentFunc ["@func updateComponent: 包装vm._update(vm._render()), 用于延迟执行和watcher调用"]
+                    udpateComponent["@func updateComponent: 包装vm._update(vm._render()), 用于延迟执行和watcher调用"]  
+
+                    updateComponent -->|1. 调用vm._render: 生成虚拟节点|_render
+                    updateComponent -->|2. 调用vm._update: 将虚拟节点转为真实dom节点并挂载到rootContainer|_update
+                end
+
+                mountComponent -->|1.定义函数updateComponent|updateComponent
+                mountComponent -->|2.调用updateComponent|updateComponent
+            end
+
+
+            lifeCycleMixin -.-|导入挂载|_update
+
+            _render -->|输入虚拟节点树|_update
+            mountComponent -->|调用|_update
+        end
+        class lifeCycleModule module
+        class mountComponent,lifeCycleMixin func
+
+        subgraph vnodeFunc["@func vnode"]
+            vnode_input[/"@param: name, data, children, text"/]
+            vnode["@func vnode"]
+            vnode_return[("@returns: {
+                name,
+                data,
+                children,
+                value
+            }")]
+
+
+            _c -->|调用|createElement -->|调用|vnode
+            _v -->|调用|createTextNode -->|调用|vnode
+            render_func -.->|概述: 嵌套调用, 合并变量数据, 生成规范化的虚拟dom|vnode 
+        end
+
+
+        %% Vue.js
+        subgraph VueModule ["@module Vue: 只有一个构造函数, 实例方法由其他函数指定"]
+            Vue["@contructor Vue: Vue构造函数"]
+            vm["@instance vm: Vue实例"]
+
+            $options["@prop $options: vm实例属性"]
+            $options_render["@prop $options_render: $options属性"]
+
+            %% import
+            importVue -->|导入|Vue
+            Vue -..->|导入调用|initMixin
+            Vue -..->|导入调用|lifeCycleMixin
+            Vue -..->|导入调用|renderMixin
+
+
+            %% 实例方法
+            _update --o|实例方法|Vue
+            _c & _v & _s & _render ---o|实例方法|Vue
+            _init --o|实例方法|Vue
+            $mount --o|实例方法|Vue
+
+            %% 实例指向和调用
+            render_func -.->|this目标指向|vm
+            vm -->|调用实例方法|_init
+
+            %% 属性
+            vm --x $options
+            $options --x $options_render
+        end
+        class VueModule module
+        class Vue Vue
+        class vm vm
+        class _update,_c,_v,_s,_render,_init,$mount method
+    </div>
+
+</body>
+
+</html>
