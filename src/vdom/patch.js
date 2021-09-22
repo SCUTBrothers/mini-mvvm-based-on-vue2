@@ -7,12 +7,16 @@ export function patch(vm, newVNode) {
         vm.$el.appendChild(el)
 
         vm.$el = el
+        console.log(`第一次初始化时, el的parentNode为${vm.$el.parentNode}`)
         vm.$vnode = newVNode
     } else {
         const el = createElement(newVNode)
         let parentNode = vm.$el.parentNode
         parentNode.insertBefore(el, vm.$el.nextSibiling)
         parentNode.removeChild(vm.$el)
+
+        vm.$el = el
+        vm.$vnode = newVNode
     }
 }
 
