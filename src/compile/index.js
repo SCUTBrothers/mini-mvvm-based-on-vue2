@@ -6,7 +6,10 @@ export function compileToRenderFunction(template) {
 
   let code = generate(ast)
 
-  console.log(code)
+  console.log(`render function is:
+  with (this) {
+      return ${code}
+  }`)
   let render = new Function(`with (this) {
       return ${code}
   }`)
