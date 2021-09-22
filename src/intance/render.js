@@ -21,11 +21,6 @@ export function renderMixin(Vue) {
     const vm = this
     const render = vm.$options.render
     console.log(`_render中, 获取生成好的render函数`)
-    console.log(`render函数为: 
-    -----
-      ${render} 
-    -----
-    `)
     console.log(`_render中, render函数调用前`)
     let vnode = render.call(vm)
     console.log(`_render中, render函数调用结束, 生成并返回虚拟节点`)

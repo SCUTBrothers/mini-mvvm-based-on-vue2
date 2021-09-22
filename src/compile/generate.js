@@ -26,7 +26,6 @@ function generateText(text) {
   if (preIndex < text.length) {
     tokens.push("'" + text.slice(preIndex) + "'")
   }
-  console.log(tokens)
   return tokens.join('+')
 }
 
