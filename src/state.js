@@ -1,3 +1,4 @@
+import { Dep } from './reactivity/dep.js'
 import { observe } from './reactivity/observe.js'
 import Watcher from './reactivity/watcher.js'
 
@@ -62,6 +63,11 @@ function createComputedGetter(key) {
 
     if (watcher.dirty) {
       watcher.evaluate()
+
+      if (Dep.target) {
+        watcher.depend()
+        console.log(`watcher depend on ${Dep.target.getter.name}`)
+      }
     }
 
     return watcher.value

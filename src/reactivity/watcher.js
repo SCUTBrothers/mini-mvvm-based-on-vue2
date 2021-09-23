@@ -4,13 +4,16 @@ let id = 0
 
 export default class Watcher {
   constructor(vm, fn, isComputed) {
+    this.vm = vm
     this.id = id++
     console.log(
       `create watcher instance, id is ${this.id}, target is ${fn.name}`
     )
     this.dirty = true
-    this.getter = fn.bind(vm)
+    this.getter = fn
     this.isComputed = !!isComputed
+
+    this.deps = []
     if (!this.isComputed) {
       this.get()
     }
@@ -22,7 +25,7 @@ export default class Watcher {
     )
 
     pushTarget(this)
-    let result = this.getter()
+    let result = this.getter.call(this.vm)
     popTarget(this)
 
     return result
@@ -47,6 +50,17 @@ export default class Watcher {
     console.log(`watcher.evalue被调用, 计算属性的值将重新进行计算`)
     this.value = this.get()
     this.dirty = false
+  }
+
+  depend() {
+    for (let i = this.deps.length - 1; i > -1; i--) {
+      this.deps[i].depend()
+    }
+    console.log(`this.deps is ${this.deps}`)
+  }
+
+  addDep(dep) {
+    this.deps.push(dep)
   }
 }
 

@@ -25,9 +25,4 @@ const app = new Vue({
   },
 })
 
-app.task1 = 'singing'
-app.task1 = 'gaming'
-app.task1 = '1'
-app.task1 = '2'
-app.task1 = '3'
-app.task1 = '4'
+app.lastname = 'Mike'
