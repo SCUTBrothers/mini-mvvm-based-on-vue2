@@ -1,8 +1,9 @@
-import { patch } from "../vdom/patch.js"
-import Watcher from "../reactivity/watcher.js"
+import { patch } from '../vdom/patch.js'
+import Watcher from '../reactivity/watcher.js'
 
 export function lifecycleMixin(Vue) {
   Vue.prototype._update = function (vnode) {
+    console.log('update被调用')
     const vm = this
 
     patch(vm, vnode)
@@ -20,7 +21,7 @@ export function mountComponent(vm, el) {
   }
 
   const updateComponent = () => {
-    let vnode  = vm._render()
+    let vnode = vm._render()
     vm._update(vnode)
   }
 
