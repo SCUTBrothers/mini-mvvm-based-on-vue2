@@ -6,7 +6,7 @@ const app = new Vue({
         Hello {{ name }}, this is tasks of today: 
         <ul class="todolist-container">
             <li class="done">{{ task1 }}</li>
-            <li class="undo">{{ task2 }}</li>
+            <li class="undo">{{ shoppingList[shoppingList.length - 1] }}</li>
             <li class="todo"></li>
         </ul>
         another text
@@ -14,8 +14,9 @@ const app = new Vue({
     data: {
         name: "Nicholas",
         task1: "running",
-        task2: "reading"
+        task2: "reading",
+        shoppingList: ["apple", "water", "bread"]
     }
 })
 
-app.task2 = "swimming"
+shoppingList.pop()

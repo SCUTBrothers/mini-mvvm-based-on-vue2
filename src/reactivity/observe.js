@@ -1,6 +1,5 @@
 import { isObject } from "../utils/index.js";
 import { Dep } from "./dep.js";
-import Watcher from "./watcher.js";
 
 class Observer {
     constructor(value) {
@@ -16,7 +15,10 @@ class Observer {
                 defineReactive(value, key)
             })
         }
+    }
 
+    walk(value) {
+        
     }
 }
 
