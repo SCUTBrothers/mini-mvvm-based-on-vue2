@@ -1,8 +1,18 @@
-import { createElement, createTextNode } from "../vdom/index.js"
+import { createElement, createEmpty, createTextNode } from '../vdom/index.js'
 
 export function renderMixin(Vue) {
   Vue.prototype._c = function (name, attrs, ...children) {
     return createElement(...arguments)
+  }
+
+  Vue.prototype._a = function (executableExp) {
+    return executableExp()
+  }
+
+  Vue.prototype._e = function () {
+    // 创建空标签, 用于v-if
+    console.log(`empty called`)
+    return createEmpty()
   }
 
   Vue.prototype._v = function (text) {
@@ -13,7 +23,7 @@ export function renderMixin(Vue) {
 
   Vue.prototype._s = function (value) {
     console.log(`_s被调用, 引用的mustache中的变量值为${value}`)
-    value = value || ""
+    value = value || ''
     return value
   }
 
