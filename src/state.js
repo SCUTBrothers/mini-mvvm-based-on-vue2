@@ -62,7 +62,13 @@ function createComputedGetter(key) {
     const watcher = vm._computedWatchers[key]
 
     if (watcher.dirty) {
+      console.log(
+        `计算属性watcher(计算属性名字为${key})重新计算前: watcher deps长度为${watcher.deps.length}`
+      )
       watcher.evaluate()
+      console.log(
+        `计算属性watcher重新计算后: watcher deps长度为${watcher.deps.length}`
+      )
 
       if (Dep.target) {
         watcher.depend()

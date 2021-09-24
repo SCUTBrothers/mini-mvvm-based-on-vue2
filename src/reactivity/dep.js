@@ -1,6 +1,9 @@
+let id = 0
 export class Dep {
-  constructor() {
+  constructor(name) {
+    this.id = id++
     this.subs = new Set()
+    this.name = name || ''
   }
 
   depend() {
@@ -11,6 +14,11 @@ export class Dep {
 
   addSub(watcher) {
     this.subs.add(watcher)
+  }
+
+  removeSub(watcher) {
+    console.log(`removeSub called`)
+    this.subs.delete(watcher)
   }
 
   notify() {

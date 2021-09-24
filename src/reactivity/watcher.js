@@ -14,6 +14,7 @@ export default class Watcher {
     this.isComputed = !!isComputed
 
     this.deps = []
+    this.depIds = []
     if (!this.isComputed) {
       this.get()
     }
@@ -47,20 +48,47 @@ export default class Watcher {
   }
 
   evaluate() {
-    console.log(`watcher.evalue被调用, 计算属性的值将重新进行计算`)
+    console.log(`watcher.evalu被调用, 计算属性的值将重新进行计算`)
+    let oldDeps = this.deps.slice()
+    let oldDepIds = this.depIds.slice()
+    this.deps = []
+    this.depIds = []
+
     this.value = this.get()
     this.dirty = false
+    this.cleanDeps(oldDeps, oldDepIds)
   }
 
   depend() {
     for (let i = this.deps.length - 1; i > -1; i--) {
       this.deps[i].depend()
     }
-    console.log(`this.deps is ${this.deps}`)
   }
 
   addDep(dep) {
-    this.deps.push(dep)
+    if (!this.hasDep(dep)) {
+      this.deps.push(dep)
+      this.depIds.push(dep.id)
+    }
+  }
+
+  hasDep(dep) {
+    return this.depIds.indexOf(dep.id) > -1
+  }
+
+  cleanDeps(oldDeps, oldDepIds) {
+    /**
+     * 获取旧依赖和新依赖的不同的部分,
+     * 如old[a, b, c], new[a, e, f], 获取old与new的差集[b, c], 去到差集对应的依赖中,
+     * 将其从依赖的subs中移除, 后续该属性更新的时候就不会通知旧依赖
+     */
+    const newDepIds = this.depIds
+
+    for (let i = 0; i < oldDepIds.length; i++) {
+      if (!newDepIds.includes(oldDepIds[i])) {
+        oldDeps[i].removeSub(this)
+      }
+    }
   }
 }
 

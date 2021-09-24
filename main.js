@@ -5,7 +5,6 @@ const app = new Vue({
   template: `<div class="todolist-wrapper">
         Hello {{ fullname }}, this is tasks of today: 
         <ul class="todolist-container">
-            <li class="done">{{ task1 }}</li>
             <li class="undo">{{ shoppingList[shoppingList.length - 1] }}</li>
             <li class="todo"></li>
         </ul>
@@ -14,15 +13,19 @@ const app = new Vue({
   data: {
     firstname: 'Nicholas',
     lastname: 'Zhaosi',
-    task1: 'running',
-    task2: 'reading',
+    isNeedFirst: true,
     shoppingList: ['apple', 'water', 'bread'],
   },
   computed: {
     fullname() {
-      return this.firstname + '.' + this.lastname
+      if (this.isNeedFirst) {
+        return this.firstname + '.' + this.lastname
+      } else {
+        return this.lastname
+      }
     },
   },
 })
 
-app.lastname = 'Mike'
+app.isNeedFirst = false
+app.firstname = 'Jack'
