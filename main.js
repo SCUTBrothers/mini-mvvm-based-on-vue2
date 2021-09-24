@@ -27,5 +27,4 @@ const app = new Vue({
   },
 })
 
-app.isNeedFirst = false
-app.firstname = 'Jack'
+app.shoppingList.pop()

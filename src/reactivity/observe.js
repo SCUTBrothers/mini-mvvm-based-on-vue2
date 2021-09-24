@@ -1,8 +1,13 @@
 import { isObject } from '../utils/index.js'
+import { arrayMethods } from './array.js'
 import { Dep } from './dep.js'
 
 class Observer {
   constructor(value) {
+    this.walk(value)
+  }
+
+  walk(value) {
     if (isObject(value)) {
       Object.defineProperty(value, '__ob__', {
         configurable: false,
@@ -11,19 +16,35 @@ class Observer {
         value: this,
       })
 
-      Object.keys(value).forEach((key) => {
-        defineReactive(value, key)
-      })
+      if (Array.isArray(value)) {
+        value.__proto__ = arrayMethods
+        this.observeArray(value)
+      } else {
+        Object.keys(value).forEach((key) => {
+          defineReactive(value, key)
+        })
+      }
     }
   }
 
-  walk(value) {}
+  observeArray(value) {
+    value.forEach((item) => {
+      if (isObject(item)) {
+        observe(item)
+      }
+    })
+  }
 }
 
 function defineReactive(obj, key) {
-  let value = obj[key]
-  if (isObject(value)) observe(value)
   let dep = new Dep(key)
+
+  let value = obj[key]
+  if (isObject(value)) {
+    observe(value)
+    console.log(`called, typeof value is array? :${Array.isArray(value)}`)
+    value.__ob__.dep = dep
+  }
 
   Object.defineProperty(obj, key, {
     configurable: true,
@@ -45,6 +66,7 @@ function defineReactive(obj, key) {
         )
         dep.depend()
       }
+
       return value
     },
   })
@@ -52,6 +74,7 @@ function defineReactive(obj, key) {
 
 export function observe(value) {
   if (!isObject(value)) return
+  if (value.__ob__) return
 
   return new Observer(value)
 }
