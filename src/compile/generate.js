@@ -47,6 +47,20 @@ function generateAttr(attrs) {
   return res.slice(0, -1)
 }
 
+function genDirectives(el) {
+  // todo
+  const dirs = el.directives
+  if (!dirs.length) return
+  let res = 'directives:['
+  let i, l, dir
+  for (i = 0, l = dirs.length; i < l; i++) {
+    dir = dirs[i]
+    res += `name: "${dir.name}", rawName: "${dir.rawName}"${
+      dir.value ? `, value: (${dir.value})` : ''
+    }`
+  }
+}
+
 function genElement(el, stateProcessed) {
   if (el.for) {
     return genFor(el)

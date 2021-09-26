@@ -11,12 +11,21 @@ export function initState(vm) {
   if (options.computed) {
     initComputed(vm)
   }
+  if (options.methods) {
+    initMethods(vm)
+  }
 }
 
+const noop = () => {}
+
+/**
+ * data可能是函数, 或者是对象
+ */
 function initData(vm) {
   let data = vm.$options.data
+  if (!data) return
 
-  vm._data = data = data || {}
+  vm._data = data = typeof data == 'function' ? data() : data
 
   observe(vm._data)
 
@@ -42,8 +51,8 @@ function defineComputed(target, key, userDef) {
   const sharedPropertyDefinition = {
     configurable: true,
     enumerable: true,
-    get: () => {},
-    set: () => {},
+    get: noop,
+    set: noop,
   }
 
   if (typeof userDef == 'function') {
@@ -94,4 +103,11 @@ function proxy(target, receiver) {
       },
     })
   })
+}
+
+// methods定义的函数直接挂载到vm实例上
+function initMethods(vm) {
+  for (const key in methods) {
+    vm[key] = methods == null ? noop : bind(methods[key], vm)
+  }
 }

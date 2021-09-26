@@ -27,7 +27,7 @@ const startTagClose = /^\s*>/
 
 const endTag = new RegExp(`^<\\s*\\/${qnameCapture}\\s*>`)
 
-export function parseHTML(html) {
+export function HTMLParser(html) {
   html = html.trim()
   const stack = []
   let root
@@ -118,6 +118,10 @@ const start = (html) => {
     html,
   }
 }
+
+const parseModifiers = (name) => {}
+
+const processAttrs = (el) => {}
 
 const end = (html, stack) => {
   let endMatch = html.match(endTag)
