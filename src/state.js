@@ -107,7 +107,8 @@ function proxy(target, receiver) {
 
 // methods定义的函数直接挂载到vm实例上
 function initMethods(vm) {
+  const methods = vm.$options.methods
   for (const key in methods) {
-    vm[key] = methods == null ? noop : bind(methods[key], vm)
+    vm[key] = methods == null ? noop : methods[key].bind(vm)
   }
 }

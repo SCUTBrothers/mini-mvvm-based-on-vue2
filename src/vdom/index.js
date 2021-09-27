@@ -10,9 +10,9 @@ export function createEmpty() {
   return vnode('div', {}, [], undefined)
 }
 
-export function vnode(tag, data, children, text) {
+export function vnode(sel, data, children, text) {
   return {
-    tag,
+    sel,
     data,
     children,
     text,

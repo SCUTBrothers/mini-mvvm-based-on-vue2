@@ -1,9 +1,3 @@
-function test(a, b, ...c) {
-  console.log(a)
-  console.log(b)
-  console.log(c)
-}
-
-test(1, 2, 3)
-test(1, 2)
-test(1, 2, 3, 4)
+_h("div", {}, _h("div", {}, _v('
+            Hello, '+_s(name)+', this is your message: '+_s(msg)+'
+        ')),_h("ul", {}, _h("li", {}, _v(''+_s(todoList[todoList.length - 1].name)))))

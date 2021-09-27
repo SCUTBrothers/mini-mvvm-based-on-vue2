@@ -9,9 +9,9 @@ export function isArray(value) {
 
 export function isPrimitive(value) {
   return (
-    typeof s === 'string' ||
-    typeof s === 'number' ||
-    s instanceof String ||
-    s instanceof Number
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    value instanceof String ||
+    value instanceof Number
   )
 }

@@ -3,17 +3,29 @@ import Watcher from '../reactivity/watcher.js'
 
 export function lifecycleMixin(Vue) {
   Vue.prototype._update = function (vnode) {
-    console.log('update被调用')
+    // todo hook "beforeupdate"
     const vm = this
+    const oldVnode = vm.$vnode
+    vm.$vnode = vnode
 
-    patch(vm, vnode)
+    // 如果oldVnode为空, 则代表是第一次初始化挂载, 此时$el为挂载容器
+    // 以容器为比较对象(容器在patch内部会被初始化为空虚拟节点, 最终被新节点vnode替换)
+    // 参见snabbdom patch源码
+    console.log('patch被调用前')
+    if (!oldVnode) {
+      vm.$el = patch(vm.$el, vnode)
+    } else {
+      vm.$el = patch(oldVnode, vnode)
+    }
   }
 }
 
 export function mountComponent(vm, el) {
-  // vm.$el应该指向由template生成的element, 而不是template所在的#app, 后续再优化
+  console.log('---')
+  console.log(vm.$options.render)
   vm.$el = el
 
+  // 这个逻辑好像应该放到$mount当中
   if (!(vm.$options.template || el || vm.$options.el)) {
     console.log(
       `Failed to mount component: template or render function not defined`
@@ -21,9 +33,10 @@ export function mountComponent(vm, el) {
   }
 
   const updateComponent = () => {
-    let vnode = vm._render()
-    vm._update(vnode)
+    vm._update(vm._render())
   }
 
   new Watcher(vm, updateComponent)
+
+  // todo: hook "mounted"
 }

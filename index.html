@@ -1,22 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        .done{
+        .red {
             color: red;
         }
-        .undo{
-            color: purple;
+
+        .center {
+            margin: 0px auto;
         }
     </style>
 </head>
+
 <body>
-    <div id="app"></div>
-    <script type="module" src="main.js">
+    <div id="app">
+        <div v-on="{click: clickMethod}">
+            Hello, {{name}}, this is your message: {{ msg }}
+        </div>
+        <ul>
+            <li>{{ todoList[todoList.length - 1].name}}</li>
+        </ul>
+        <p>你今天未完成的任务数量为: {{num}}</p>
+        <input type="text" v-model="value">
+        <p>{{value}}</p>
+    </div>
+    <script type="module">
+        import Vue from './src/intance/index.js'
+
+        const app = new Vue({
+            el: '#app',
+            data: {
+                name: 'Nicholas',
+                msg: 'welcome to vue, sir!',
+                value: "some value",
+                todoList: [{
+                    name: "swimming",
+                    done: false
+                },
+                {
+                    name: "running",
+                    done: true
+                }
+                ]
+            },
+            computed: {
+                num() {
+                    const todoList = this.todoList
+                    let res
+                    res = todoList.filter((task) => {
+                        return !task.done
+                    }).length
+                    return res
+                }
+            },
+            methods: {
+                clickMethod() {
+                    console.log("clickMethod called")
+                    this.todoList.push({
+                        name: "newTask",
+                        done: false
+                    })
+                },
+            }
+        })
+        app.todoList.push({ name: "running", done: false })
     </script>
 </body>
+
 </html>

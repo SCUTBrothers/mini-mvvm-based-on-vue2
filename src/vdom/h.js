@@ -81,7 +81,7 @@ export function h(sel, b, ...c) {
   let i
 
   if (c !== undefined) {
-    // 3个参数的情况, data  = b
+    // * 3个参数的情况, data  = b
     if (b !== null) {
       data = b
     }
@@ -96,19 +96,19 @@ export function h(sel, b, ...c) {
       children = [c]
     }
   } else if (b !== undefined && b !== null) {
-    // 2个参数的情况, b对应为data或者children
+    // * 2个参数的情况, b对应为data或者children
     if (isArray(b)) {
-      // 5.
+      // 5. 不包含属性和内部文本, 包含多个子元素的元素节点
       children = b
     } else if (isPrimitive(b)) {
-      // 3.
+      // 3. 不包含属性和子元素, 包含内部文本的元素节点
       text = b.toString
     } else if (b && b.sel) {
-      // 4.
+      // 4. 不包含属性和内部文本, 包含单个子元素的元素节点
       // 如果是对象且具有.sel属性, 则代表b为vnode
       children = [b]
     } else {
-      // 2.
+      // 2. 不包含内部文本和子元素, 包含属性的元素节点
       // 如果不具有sel属性, 则代表b为data
       data = b
     }

@@ -17,8 +17,8 @@ export function setElDirective(el, attrs) {
     if (dirAttr) {
       const dirname = dirAttr[1]
       el[dirname] = {
-        name: dirname[1],
-        arg: dirAttr[2] && dirAttr.slice(1),
+        name: dirname,
+        arg: dirAttr[2] && dirAttr[2].slice(1),
         modifier: dirAttr[3] ? { [dirAttr[3]]: true } : null,
         expression: attrs[i].value,
       }
