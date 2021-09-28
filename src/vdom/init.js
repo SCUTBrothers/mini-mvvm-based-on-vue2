@@ -140,6 +140,44 @@ export function init(modules, domApi) {
     )
   }
 
+  function patchVnode(oldVnode, vnode, insertedVnodeQueue) {
+    let parent = oldVnode.elm.parentElement
+    vnode.elm = oldVnode.elm
+
+    if (oldVnode.children && vnode.children) {
+      let oldC
+      let c
+      for (let i = 0; i < oldVnode.children.length; i++) {
+        oldC = oldVnode.children[i]
+        c = vnode.children[i]
+        patchVnode(oldC, c)
+      }
+    }
+
+    if (oldVnode.sel === undefined && vnode.sel == undefined) {
+      if (oldVnode.text != vnode.text) {
+        // 如果两者文本不同
+        // * 1. 创建一个新的dom文本节点, 并且让vnode(文本虚拟节点)的elm指向该节点
+        // ! 这个很重要, 因为此时vnode.elm还指向oldVnode.elm, 该元素会在第5步被移除
+        // ! 如果不更新, 那么在移除以后, vnode.elm的将指向旧的elm, 且parentElement为空
+        // ! 在下次patchVnode的时候, 该vnode作为oldVnode, 无法进入到第4步
+        // ! 而按照逻辑, 它指向新的textNode, 则会保留旧elm的parentElement的指针, parent就不会为null
+        let textNode = api.createTextNode(vnode.text)
+        vnode.elm = textNode
+        // * 2 获取旧虚拟节点的指向的元素
+        let oldTextNode = oldVnode.elm
+        // * 3 获取旧元素指向的元素的父元素
+        let parent = oldTextNode.parentElement
+        if (parent !== null) {
+          // * 4 将新元素textNode插入到parent当中
+          api.insertBefore(parent, textNode, oldTextNode)
+          // * 5 将旧元素的elm从parent中移除, 移除后, elm的parentElement = parentNode = null
+          api.removeChild(parent, oldTextNode)
+        }
+      }
+    }
+  }
+
   return function patch(oldVnode, vnode) {
     console.log('patch被调用')
     const insertedVnodeQueue = []
@@ -158,12 +196,11 @@ export function init(modules, domApi) {
 
     if (sameVnode(oldVnode, vnode)) {
       // todo
-      // patchVnode(oldVnode, vnode, insertedVnodeQueue)
+      patchVnode(oldVnode, vnode, insertedVnodeQueue)
     } else {
       // * 如果不是同一个虚拟节点, 那么暴力删除
       // 先基于新的vnode, 为它创建一个elm作为它的vnode.elm的指向
       createElm(vnode, insertedVnodeQueue)
-
       let elm = oldVnode.elm
       let parent = api.parentNode(elm)
       if (parent !== null) {
@@ -171,6 +208,8 @@ export function init(modules, domApi) {
         removeVnodes(parent, [oldVnode], 0, 0)
       }
     }
+
+    return vnode
   }
 }
 
@@ -180,7 +219,9 @@ function isVnode(vnode) {
 }
 
 // todo
-function sameVnode(vnode1, vnode2) {}
+function sameVnode(vnode1, vnode2) {
+  return vnode1.sel === vnode2.sel && vnode1.key === vnode2.key
+}
 
 // todo
 function createKeyToOldIdx(children, beginIdx, endIdx) {}

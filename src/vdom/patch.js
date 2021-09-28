@@ -1,3 +1,4 @@
 import { init } from './init.js'
-import { eventListenerModule } from './modules/eventlistener.js'
-export const patch = init([eventListenerModule])
+import { domPropsModule } from './modules/domProps.js'
+import { nativeEventListenerModule } from './modules/nativeeventlistener.js'
+export const patch = init([nativeEventListenerModule, domPropsModule])

@@ -1,4 +1,8 @@
 /**
+ * * Modified at https://github.com/blowsie/Pure-JavaScript-HTML5-Parser
+ */
+
+/**
  * startTag
  * <div class="red" v-on:click = "clickMethod" v-if = "true" width = 100 >
  * g1(标签名): div
@@ -135,7 +139,6 @@ export default function HTMLParser(html, handler) {
   function parseStartTag(tag, tagName, rest, unary) {
     tagName = tagName.toLowerCase()
 
-    // todo 这两个暂时不知道干什么用的
     if (block[tagName]) {
       while (stack.last() && inline[stack.last()]) {
         parseEndTag('', stack.last())
@@ -146,6 +149,7 @@ export default function HTMLParser(html, handler) {
       parseEndTag('', tagName)
     }
 
+    // * 注: input属于空元素
     unary = empty[tagName] || !!unary
 
     if (!unary) {
@@ -156,7 +160,6 @@ export default function HTMLParser(html, handler) {
       const attrs = []
 
       rest.replace(attr, function (match, name) {
-        console.log(match)
         /**
          * arguments[1]为g1, 对应属性名name
          * arguments[2]为g2, 对应双引号类型的"<value>"属性值

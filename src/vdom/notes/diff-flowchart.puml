@@ -1,0 +1,26 @@
+@startuml
+    start;
+    : 输入虚拟节点;
+    : 获取sel;
+    if (sel === "!"?\n sel是注释节点) then (是)
+        if (isUndef(vnode.text)\n 虚拟节点内部文本为undefined?) then (是)
+            : vnode.text = "";
+            : createComment(vnode.text) 创建空注释节点;
+        endif
+    elseif (sel !== undefined \n sel不为空) then (是)
+        : 解析选择器sel获取元素tag;
+        if (isDef(data) \n data为undefined) then (是)
+            : createElement(tag, data);
+        endif
+    endif
+    if (isArray(children)\n children为数组) then (是)
+        : index = 0;
+        repeat
+            : 获取子虚拟节点 child = children[index];
+            : childElement = creatElm(child, insertedVnodeQueue)递归调用生成真实dom;
+            : apendChild(elm, childElement);
+        repeat while (index < children.length)
+    elseif (vnode.text为字符串或者number) then(是) 
+        : childTextNode = crreateTextNode(vnode.text);
+    endif
+@enduml
