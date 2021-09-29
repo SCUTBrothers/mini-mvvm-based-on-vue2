@@ -1,10 +1,10 @@
 # mini-mvvm based on vue2
-
+repo github地址: [SCUTBrothers/mini-mvvm-based-on-vue2](https://github.com/SCUTBrothers/mini-mvvm-based-on-vue2)
 ## Introduction
 
 > Note: not finish yet, it's just a draft
 
-vue2源码包含很多为了兼容边缘情况和实现高级功能的代码, 不方便阅读, 很容易一头雾水. 网上部分源码解读的博客通常是贴出源码中的代码片段来解析框架当中的部分功能, 然而这样效果并不好, 因为一个框架的模块并不是独立存在的, 一环扣一环, 如果要较好地实现某一功能, 那么必须要了解它相关的一些模块的功能.
+vue2源码包含很多为了兼容边缘情况和实现高级功能的代码, 不方便阅读, 很容易一头雾水. 网上部分源码解读的博客通常是贴出源码中的代码片段来解析框架当中的部分功能, 然而这样效果并不好, 因为一个框架的模块并不是独立存在的, 一环扣一环, 如果要较好地实现某一功能, 那么必须要了解它相关的一些模块的功能  
 
 比如:
 - 要实现响应式更新视图, 那么就需要知道render函数(数据修改调用render函数), 
