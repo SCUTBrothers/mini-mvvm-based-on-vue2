@@ -19,20 +19,9 @@
 
 <body>
     <div id="app">
-        <h1 v-bind:title="title" v-on:click="showProp">Vue源码测试</h1>
-        <div v-on="{click: clickMethod}">
-            Hello, {{name}}, this is your message: {{ msg }}
-        </div>
-        <ul>
-            <li>{{ todoList[todoList.length - 1].name}}</li>
-        </ul>
-        <p>你今天未完成的任务数量为: {{num}}</p>
-        <input type="text" v-bind:value="value" v-on:input="inputTest">
-        <p>{{value}}</p>
-        <label>v-model test</label>
-        <br />
-        <input type="text" v-model="modelNum">
-        <p>num of v-model is {{modelNum}}</p>
+        <h2 v-if="ifCondition">v-if if true</h2>
+        <h2 v-else-if="elseIfCondition">v-else-if condition if true</h2>
+        <button v-on:click="clickMethod">点击toggle v-if条件</button>
     </div>
 
     <script type="module">
@@ -41,20 +30,8 @@
         const app = new Vue({
             el: '#app',
             data: {
-                name: 'Nicholas',
-                msg: 'welcome to vue, sir!',
-                value: "some value",
-                modelNum: 1,
-                todoList: [{
-                    name: "swimming",
-                    done: false
-                },
-                {
-                    name: "running",
-                    done: true
-                }
-                ],
-                title: "a title"
+                ifCondition: false,
+                elseIfCondition: true
             },
             computed: {
                 num() {
@@ -67,19 +44,9 @@
                 },
             },
             methods: {
-                showProp(event, vnode) {
-                    const elm = vnode.elm
-                    console.log("🏩 in showProp ")
-                    elm.test = "test text"
-                },
-                inputTest(event, vnode) {
-                    console.log("input called")
-                    const elm = vnode.elm
-                    this.value = elm.value
-                },
                 clickMethod() {
-                    console.log("clickMethod called")
-                    this.todoList.push({ name: "xxx", done: false })
+                    console.log("🌍  click method called")
+                    this.ifCondition = !this.ifCondition
                 },
             }
         })

@@ -4,6 +4,7 @@ import {
   addProp,
   addDirective,
   addAttr,
+  getAndRemoveAttr,
 } from './helper.js'
 import HTMLParser from './html-parser.js'
 import TextParser from './text-parser.js'
@@ -19,7 +20,7 @@ console.log('compile called')
 // * vue当中该函数名字为parse
 export function ast(template) {
   let root
-  let currentParent
+  let currentParent = null
   const stack = []
 
   HTMLParser(template, {
@@ -39,23 +40,19 @@ export function ast(template) {
         parent: currentParent,
         children: [],
         style: null,
+        // parent
         // attrs: [{name: ..., value: ...}] 在addAttr()中生成
         // events: {eventName: handlerName<string>, ...} 在addHandler()中生成
         // props: [{name: ..., value: ...}] 在addProp()中生成
         // directives: [{name: ..., rawName: ..., value: ..., arg: ...}] 在addDirective()中生成
       }
 
+      processIf(element)
+
       if (!root) {
-        // // ? 这里应该是$ast, 而不是$vnode, 因为当前正处于ast解析的阶段
-        // // ? vnode在render函数运行的阶段生成的
-        // vm.$vnode = root = element
         root = element
         // root被赋值以后, !root则一直为false, 所以第一个解析的元素为根元素
-        //todo 这里应该要加 unary为true的判定
-      }
-
-      if (currentParent) {
-        currentParent.children.push(element)
+        //todo 这里应该要加 如果root unary为true的判定
       }
 
       if (!unary) {
@@ -110,7 +107,31 @@ export function ast(template) {
   })
 
   function closeElement(element) {
+    // 我认为这个应该放到最后, 因为v-if, v-else-if, v-else 不需要被processAttrs解析
     element = processElement(element)
+
+    if (currentParent) {
+      /**
+       * 对于如下结构:
+       * <div id = "parent">
+       *    <div v-if = "xxx">
+       *    </div>
+       *    <div v-else-if = "xxx">
+       *    </div>
+       *    <div v-else>
+       *    </div>
+       * </div>
+       *
+       * 只有v-if会push到parent.children当中
+       * 而v-elsif, v-else指向的element会推入v-if元素的conditions当中
+       */
+      if (element.elseif || element.else) {
+        processIfConditions(element, currentParent)
+      } else {
+        currentParent.children.push(element)
+        element.parent = currentParent
+      }
+    }
 
     // 这里还有很多closeElement的逻辑, 暂时用不上
   }
@@ -171,4 +192,80 @@ function processAttrs(element) {
       addAttr(element, name, value)
     }
   }
+}
+
+// 在start当中调用, 解析el是否是elseif, else元素. 因为需要在closeElement的时候, 需要知道这些信息, 以判断是否将该元素推入到父级的children数组当中
+function processIf(el) {
+  let exp = getAndRemoveAttr(el, 'v-if')
+  if (exp) {
+    el.if = exp
+    addIfCondition(el, {
+      exp,
+      block: el,
+    })
+  } else {
+    if (getAndRemoveAttr(el, 'v-else') != null) {
+      el.else = true
+      // 将v-else看成是v-else-if = "true"的表达式
+      el.elseif = 'true'
+    }
+    const elseif = getAndRemoveAttr(el, 'v-else-if')
+    if (elseif) {
+      el.elseif = elseif
+    }
+  }
+}
+
+// ! 在closeElement当中调用, 处于带有v-elseif, v-else的块元素的模板刚被解析完的时刻
+// * proceeIfConditions被调用时, parent.chidren的栈顶可能是
+// *   1. 文本元素
+// *   2. 没有v-if属性的元素
+// *   3. 带有v-if属性的元素
+// * 正如vue文档所说的, 只有v-elseif紧接着v-if, v-if紧接着v-elseif或v-if才会被处理,
+// * 中间如果隔着其他块元素, 那么v-elseif, v-else将会被忽略,
+// * 如果隔着文本元素, 那么文本元素会被移除
+function processIfConditions(el, parent) {
+  // 从parent.children当中获取v-elseif, v-else前面的元素
+  // ! 注意 v-else-if, v-else的元素不会在parent.children当中, 回看closeElement函数的逻辑
+  const prev = findPrevElement(parent.children)
+  if (prev && prev.if) {
+    addIfCondition(prev, {
+      exp: el.elseif,
+      block: el,
+    })
+  } else {
+    // 如果前面的元素没有if属性, 那么发出警告, v-else-if, 和v-else生成的条件不会推入v-if的元素的conditions属性当中
+    console.warn(
+      `v-${el.elseif ? 'else-if="' + el.elseif + '"' : 'else'} ` +
+        `used on element <${el.tag}> without corresponding v-if.`
+    )
+  }
+}
+
+function findPrevElement(children) {
+  let i = children.length - 1
+  for (i; i > -1; i--) {
+    // 从后向前一直查找, 如果遇到非元素节点, 将它弹出, 然后继续,
+    // 如果遇到元素节点, 则返回, 结束函数
+    if (children[i].type === 1) {
+      return children[i]
+    } else {
+      if (children[i].text !== ' ') {
+        console.warn(
+          `text "${children[
+            i
+          ].text.trim()}" between v-if and v-else(-if) will be ignored`
+        )
+      }
+      children.pop()
+    }
+  }
+}
+
+function addIfCondition(el, condition) {
+  if (!el.ifConditions) {
+    // 初始化
+    el.ifConditions = []
+  }
+  el.ifConditions.push(condition)
 }

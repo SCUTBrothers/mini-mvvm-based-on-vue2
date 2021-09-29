@@ -67,3 +67,19 @@ export function addDirective(el, name, rawName, value, arg) {
     arg,
   })
 }
+
+export function getAndRemoveAttr(el, name) {
+  let val = el.attrsMap[name]
+  if (val != null) {
+    // 如果atttrsMap当中有name属性
+    // 从attrsList当中移除与name相同的项
+    const list = el.attrsList
+    for (let i = 0, l = list; i < l; i++) {
+      if (list[i].name === name) {
+        list.splice(i, 1)
+        break
+      }
+    }
+  }
+  return val
+}

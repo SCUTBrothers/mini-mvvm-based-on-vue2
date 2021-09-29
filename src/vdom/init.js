@@ -141,40 +141,85 @@ export function init(modules, domApi) {
   }
 
   function patchVnode(oldVnode, vnode, insertedVnodeQueue) {
-    // * 1. 判断vnode是否有text属性
-    let parent = oldVnode.elm.parentElement
+    // ! patchVnode只有在oldVnode和vnode(sameVnode)相同的时候才会被调用或递归调用
+
+    // ! 注意要有这一步, 因为patch最终返回的是vnode
+    // ! 如果没有这一步, 那么在下次patchVnode的时候, vnode上的elm为undefined
     vnode.elm = oldVnode.elm
+    // * 1.0 判断vnode是否有text属性
+    if (vnode.text) {
+      // * 1.0 - yes: 说明oldVnode与vnode都是文本节点
 
-    if (oldVnode.children && vnode.children) {
-      let oldC
-      let c
-      for (let i = 0; i < oldVnode.children.length; i++) {
-        oldC = oldVnode.children[i]
-        c = vnode.children[i]
-        patchVnode(oldC, c)
+      // 1.1 判断oldVnode和vnode的text是否不同
+      if (oldVnode.text !== vnode.text) {
+        // 1.1 - yes: 修改oldVnode指向的elm(文本dom节点)的文本内容(通过textContent或者nodeValue)
+        //          不能使用innerText, 因为文本节点没有innerText属性
+
+        oldVnode.elm.nodeValue = vnode.text
+      } else {
+        // 1.1 - no: 文本内容相同, 不用修改, 直接返回
       }
-    }
+    } else if (vnode.children) {
+      // * 拥有children的新虚拟元素节点vnode
+      if (!oldVnode.children) {
+        // oldVnode没有children, 将vnode的children作为oldVnode的children
+        // 保留oldVnode(因为oldVnode和vnode sameVnode判定为true, 所以不能摧毁oldVnode),
+        // 初始化oldVnode的children.通过createElm将vnode及其子节点转为带有elm的vnode
+        // append vnode**首层**子节点vnode的elm到oldVnode.elm的子节点当中
+        oldVnode.children = []
+        vnode = createElm(vnode, insertedVnodeQueue)
+        vnode.children.forEach((c) => {
+          oldVnode.children.push(c)
+          oldVnode.elm.appendChild(c)
+        })
+      } else {
+        // oldVnode有children
+        // 保留oldVnode指向的elm, 并将其赋值给vnode. 仅处理其子节点
+        vnode.elm = oldVnode.elm
+        // 递归patchVnode, 比较子级的vnode和oldVnode
+        let oldVnodeChildren = oldVnode.children
+        let vnodeChildren = vnode.children
 
-    if (oldVnode.sel === undefined && vnode.sel == undefined) {
-      if (oldVnode.text != vnode.text) {
-        // 如果两者文本不同
-        // * 1. 创建一个新的dom文本节点, 并且让vnode(文本虚拟节点)的elm指向该节点
-        // ! 这个很重要, 因为此时vnode.elm还指向oldVnode.elm, 该元素会在第5步被移除
-        // ! 如果不更新, 那么在移除以后, vnode.elm的将指向旧的elm, 且parentElement为空
-        // ! 在下次patchVnode的时候, 该vnode作为oldVnode, 无法进入到第4步
-        // ! 而按照逻辑, 它指向新的textNode, 则会保留旧elm的parentElement的指针, parent就不会为null
-        let textNode = api.createTextNode(vnode.text)
-        vnode.elm = textNode
-        // * 2 获取旧虚拟节点的指向的元素
-        let oldTextNode = oldVnode.elm
-        // * 3 获取旧元素指向的元素的父元素
-        let parent = oldTextNode.parentElement
-        if (parent !== null) {
-          // * 4 将新元素textNode插入到parent当中
-          api.insertBefore(parent, textNode, oldTextNode)
-          // * 5 将旧元素的elm从parent中移除, 移除后, elm的parentElement = parentNode = null
-          api.removeChild(parent, oldTextNode)
+        let oldCh
+        let ch
+        for (let i = 0, l = oldVnodeChildren.length; i < l; i++) {
+          oldCh = oldVnodeChildren[i]
+          ch = vnodeChildren[i]
+          if (sameVnode(oldCh, ch)) {
+            patchVnode(oldCh, ch)
+          } else {
+            // 两个节点不同, 不应递归调用patchVnode, 而是直接移除替换
+
+            // 生成带elm的vnode
+            createElm(ch, insertedVnodeQueue)
+
+            let parent = oldCh.elm.parentNode
+            if (parent != null) {
+              // 通常来说, 程序逻辑正确的话, parent是不等于null的
+              api.insertBefore(parent, ch.elm, oldCh.elm)
+              removeVnodes(parent, [oldCh], 0, 0)
+            }
+          }
         }
+        return vnode
+      }
+    } else {
+      // * children为undefined的虚拟元素节点vnode
+      if (
+        !oldVnode.children ||
+        (oldVnode.children && oldVnode.children.length === 0)
+      ) {
+        // * 如果oldVnode.children也为空,或者children长度为0, 则直接返回
+        // todo 这里没有涉及比较oldVnode.data和vnode.data的逻辑
+      } else {
+        // * 如果oldVnode.children不为空, 且长度不为0
+        // * 有以下两种处理方法(暂不考虑data)
+        // ? 1. 将oldVnode的首层子节点的elm从oldVnode.elm中移除, 然后将oldVnode.children.length设置为0(清空children)
+        // ? 2. 将oldVnode.elm从oldVnode.elm.parentNode当中整个移除, 然后createElm(vnode), 将vnode.elm推入到oldVnode.elm.parentNode当中
+        // * 由于sameVnode的时候, 要保留oldVnode, 所以选用第1种方法
+        let parent = oldVnode.elm
+        removeVnodes(parent, oldVnode.children, 0, oldVnode.children.length - 1)
+        oldVnode.children.length = 0
       }
     }
   }

@@ -20,16 +20,59 @@ export function generate(ast) {
 }
 
 function genElement(el, state) {
-  const data = genData(el, state)
+  // todo genStatic
+  // todo el.static是用于标识那些没有绑定vm数据或者指令(v-on, v-if等)的静态节点,
+  // todo 静态标识利于patch diff, 在diff的时候不会去比较新旧两个静态节点, 因为两者数据不会发生变化
 
-  // * 输入的el必然是根元素ast, 所以不用判定它的type以确定是否是文本节点, 这个逻辑应放到函数genChildren()当中
-  const children = genChildren(el, state)
+  if (el.if && !el.ifProcessed) {
+    return genIf(el, state)
+  } else {
+    const data = genData(el, state)
 
-  let code = `_c('${el.tag}'${data ? `, ${data}` : ''}${
-    children ? `,${children}` : ''
-  })`
+    // * 输入的el必然是根元素ast, 所以不用判定它的type以确定是否是文本节点, 这个逻辑应放到函数genChildren()当中
+    const children = genChildren(el, state)
 
-  return code
+    let code = `_c('${el.tag}'${data ? `, ${data}` : ''}${
+      children ? `,${children}` : ''
+    })`
+
+    return code
+  }
+}
+
+function genIf(el, state) {
+  el.ifProcessed = true
+  return genIfConditions(el.ifConditions.slice(), state)
+}
+
+/**
+ * [{exp: <if exp>,block: <if el>}, {exp: <elseif exp>, block}, {exp: <else exp>, block}]
+ *
+ * 一个condtion对应生成一个不完整的三元表达式(<if exp>) ? <if el code> : (递归调用genIfConditions)
+ * 直到conditions为[], ... ? ... : ... ? ... : (最后的部分)
+ * 再次调用genIfConditions, 生成_e(), 填上最后的部分
+ *
+ * 这个递归用的挺棒的!
+ */
+function genIfConditions(conditions, state) {
+  if (!conditions.length) {
+    // _e用于生成空节点<div></div>
+    return `_e()`
+  }
+
+  const condition = conditions.shift()
+  if (condition.exp) {
+    return `(${condition.exp})?${genTernaryExp(
+      condition.block,
+      state
+    )}:${genIfConditions(conditions, state)}`
+  } else {
+    return `${genTernaryExp(condition.block, state)}`
+  }
+}
+
+function genTernaryExp(el, state) {
+  return genElement(el, state)
 }
 
 function genData(el, state) {
@@ -79,7 +122,12 @@ function genDirectives(el, state) {
   let dir
   for (let i = 0, l = dirs.length; i < l; i++) {
     dir = dirs[i]
-    const gen = state.directives[dir.name]
+    try {
+      var gen = state.directives[dir.name]
+    } catch (e) {
+      console.log(state)
+      var gen = state.directives[dir.name]
+    }
     /**
      * res = [{
         name: "on",
