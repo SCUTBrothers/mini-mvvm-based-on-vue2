@@ -24,7 +24,12 @@ function genElement(el, state) {
   // todo el.static是用于标识那些没有绑定vm数据或者指令(v-on, v-if等)的静态节点,
   // todo 静态标识利于patch diff, 在diff的时候不会去比较新旧两个静态节点, 因为两者数据不会发生变化
 
-  if (el.if && !el.ifProcessed) {
+  if (el.for && !el.forProcessed) {
+    return genFor(el, state)
+  } else if (el.if && !el.ifProcessed) {
+    // * 关于ifProcessed: 因为genIf内部会递归调用genElement, 所以如果设置ifProcessed(genIf中会设置为true),
+    // * 那么递归调用的时候, 会再次进入这个if逻辑, 从何循环递归, 导致出错.
+    // * 其他el.xxProcessed属性同理
     return genIf(el, state)
   } else {
     const data = genData(el, state)
@@ -75,6 +80,19 @@ function genTernaryExp(el, state) {
   return genElement(el, state)
 }
 
+function genFor(el, state) {
+  el.forProcessed = true
+  const exp = el.for
+  const alias = el.alias
+  const iterator1 = el.iterator1 ? `,${el.iterator1}` : ''
+  const iterator2 = el.iterator2 ? `,${el.iterator2}` : ''
+
+  return `_l((${exp}), function(${alias}${iterator1}${iterator2}){return ${genElement(
+    el,
+    state
+  )}})`
+}
+
 function genData(el, state) {
   let data = '{'
 
@@ -86,6 +104,9 @@ function genData(el, state) {
   const dirs = genDirectives(el, state)
   if (dirs) data += dirs + ','
 
+  if (el.key) {
+    data += `key:${el.key},`
+  }
   if (el.nativeEvents) {
     // 单种事件, v-on: click = "clickHandler"
     //  arg = "click", expression = "clickHandler"

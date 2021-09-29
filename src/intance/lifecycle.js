@@ -11,11 +11,16 @@ export function lifecycleMixin(Vue) {
     // 以容器为比较对象(容器在patch内部会被初始化为空虚拟节点, 最终被新节点vnode替换)
     // 参见snabbdom patch源码
     console.log('patch被调用前')
+    console.log('旧虚拟节点为: ')
+    console.log(oldVnode)
     if (!oldVnode) {
       vm.$vnode = patch(vm.$el, vnode)
     } else {
       vm.$vnode = patch(oldVnode, vnode)
     }
+    console.log('patch调用结束')
+    console.log('新虚拟节点为')
+    console.log(vm.$vnode)
   }
 }
 

@@ -5,6 +5,7 @@ import {
   addDirective,
   addAttr,
   getAndRemoveAttr,
+  getBindingAttr,
 } from './helper.js'
 import HTMLParser from './html-parser.js'
 import TextParser from './text-parser.js'
@@ -14,6 +15,12 @@ export const bindRE = /^:|^\.|^v-bind:/
 export const onRE = /^@|^v-on:?/
 
 export const argRE = /:(.*)$/
+
+// * 匹配 item in items 或者 ( item, inex  ) in items 或者 (value, name[, index]) in object
+const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+// * 匹配两个括号 (...)
+const stripParensRE = /^\(|\)$/g
 
 console.log('compile called')
 
@@ -48,6 +55,8 @@ export function ast(template) {
       }
 
       processIf(element)
+      processFor(element)
+      processKey(element)
 
       if (!root) {
         root = element
@@ -107,7 +116,6 @@ export function ast(template) {
   })
 
   function closeElement(element) {
-    // 我认为这个应该放到最后, 因为v-if, v-else-if, v-else 不需要被processAttrs解析
     element = processElement(element)
 
     if (currentParent) {
@@ -268,4 +276,57 @@ function addIfCondition(el, condition) {
     el.ifConditions = []
   }
   el.ifConditions.push(condition)
+}
+
+function processFor(el) {
+  let exp = getAndRemoveAttr(el, 'v-for')
+  if (exp) {
+    const res = parseFor(exp)
+    if (res) {
+      /**
+       * res: {alias: string, iterator1?: string, iterator2?: string}
+       */
+      Object.assign(el, res)
+    } else {
+      console.warn(`Invalid v-for expression: ${exp}`)
+    }
+  }
+}
+
+/**
+ *
+ * 匹配 item in items 或者 ( item, inex  ) in items 或者 (value, name[, index]) in object
+ * forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+ *
+ * 匹配非, } ]的字符, 作为iterator. g1: iterator1, g2?: iterator2
+ * forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+ * 匹配两个括号 (...)
+ * stripParensRE = /^\(|\)$/g
+ */
+function parseFor(exp) {
+  let inMatch = exp.match(forAliasRE)
+  if (!inMatch) return
+
+  let res = {}
+  res.for = inMatch[2].trim()
+
+  const alias = inMatch[1].trim().replace(stripParensRE, '')
+  const iteratorMatch = alias.match(forIteratorRE)
+  if (iteratorMatch) {
+    res.alias = alias.replace(forIteratorRE, '')
+    res.iterator1 = iteratorMatch[1].trim()
+    if (iteratorMatch[2]) {
+      res.iterator2 = iteratorMatch[2].trim()
+    }
+  } else {
+    res.alias = alias
+  }
+  return res
+}
+
+function processKey(el) {
+  let exp = getBindingAttr(el, 'key', true)
+  if (exp) {
+    el.key = exp
+  }
 }

@@ -37,7 +37,7 @@ vue2源码包含很多为了兼容边缘情况和实现高级功能的代码, �
 - [x] 响应式
     - [x] 计算属性
     - [x] watcher
-- [x] v-on, v-bind, v-model
+- [x] v-on, v-bind, v-model, v-if(v-else-if, v-else)
 
 - [x] virtual dom
   - [x] 模板编译
@@ -47,5 +47,5 @@ vue2源码包含很多为了兼容边缘情况和实现高级功能的代码, �
 **todo**
 
 - [ ] patch中的diff算法
-- [ ] v-for, v-if
+- [ ] v-for 
 - [ ] 组件化

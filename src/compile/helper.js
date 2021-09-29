@@ -83,3 +83,19 @@ export function getAndRemoveAttr(el, name) {
   }
   return val
 }
+
+// 获取一个v-bind属性, 并从属性列表中删除它
+// 如果getStatic为true, 则在v-bind属性获取失败后, 会去获取静态属性, 并移除该属性
+export function getBindingAttr(el, name, getStatic) {
+  const dynamic =
+    getAndRemoveAttr(el, ':' + name) || getAndRemoveAttr(el, 'v-bind:' + name)
+
+  if (dynamic != null) {
+    return dynamic
+  } else if (getStatic) {
+    let staticValue = getAndRemoveAttr(el, name)
+    if (staticValue) {
+      return `"${staticValue}"`
+    }
+  }
+}

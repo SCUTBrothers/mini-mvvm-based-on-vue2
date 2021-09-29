@@ -19,9 +19,9 @@
 
 <body>
     <div id="app">
-        <h2 v-if="ifCondition">v-if if true</h2>
-        <h2 v-else-if="elseIfCondition">v-else-if condition if true</h2>
-        <button v-on:click="clickMethod">点击toggle v-if条件</button>
+        <ul v-for="item in items" :key="item.name">
+            <li>{{item.name}}</li>
+        </ul>
     </div>
 
     <script type="module">
@@ -30,18 +30,24 @@
         const app = new Vue({
             el: '#app',
             data: {
-                ifCondition: false,
-                elseIfCondition: true
-            },
-            computed: {
-                num() {
-                    const todoList = this.todoList
-                    let res
-                    res = todoList.filter((task) => {
-                        return !task.done
-                    }).length
-                    return res
-                },
+                items: [
+                    {
+                        name: "apple",
+                        price: 1
+                    },
+                    {
+                        name: "orange",
+                        price: 1
+                    },
+                    {
+                        name: "peach",
+                        price: 1
+                    },
+                    {
+                        name: "banana",
+                        price: 1
+                    },
+                ]
             },
             methods: {
                 clickMethod() {

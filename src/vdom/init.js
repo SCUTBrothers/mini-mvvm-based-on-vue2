@@ -89,7 +89,15 @@ export function init(modules, domApi) {
       if (isArray(children)) {
         for (let i = 0; i < children.length; i++) {
           const ch = children[i]
-          api.appendChild(elm, createElm(ch, insertedVnodeQueue))
+          if (isArray(ch) && ch._isVList) {
+            console.log(ch)
+            // ! 注意: 如果是v-for生成的vnode, 那么ch不是vnode, 而是vnode数组, [vnode0, vnode1, ...]
+            for (let j = 0; j < ch.length; j++) {
+              api.appendChild(elm, createElm(ch[j], insertedVnodeQueue))
+            }
+          } else {
+            api.appendChild(elm, createElm(ch, insertedVnodeQueue))
+          }
         }
       } else if (isPrimitive(vnode.text)) {
         // * 包含内部文本, 不包含子元素
@@ -189,7 +197,6 @@ export function init(modules, domApi) {
             patchVnode(oldCh, ch)
           } else {
             // 两个节点不同, 不应递归调用patchVnode, 而是直接移除替换
-
             // 生成带elm的vnode
             createElm(ch, insertedVnodeQueue)
 
