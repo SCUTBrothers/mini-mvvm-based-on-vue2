@@ -29,6 +29,7 @@ export function addHandler(el, name, value) {
   let events = el.nativeEvents || (el.nativeEvents = {})
   if (name) {
     // v-on:click = "clickMethod"
+    // v-on:click = "value = event.target.value"
     events[name] = value.trim()
   } else {
     // v-on = "{click: clickMethod}"

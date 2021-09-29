@@ -2,6 +2,8 @@ import { createElement, createEmpty, createTextNode } from '../vdom/index.js'
 
 export function renderMixin(Vue) {
   Vue.prototype._c = function (name, attrs, children) {
+    // * 对于无子元素的节点, 在codegen的时候, children为undefined(没有第三个参数)
+    // * 对于有元素的节点, 在codegen的时候, chidren是一个数组[...]
     return createElement(...arguments)
   }
 

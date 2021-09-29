@@ -13,6 +13,7 @@ import { vnode } from './vnode.js'
 
 *   ! 2个参数
     2. 不包含内部文本和子元素, 包含属性的元素节点
+    * * 在Vue2中, 只有第8和第2种情况
     h(
         "div",
         { id: 'article', class: 'center' },
@@ -56,6 +57,7 @@ import { vnode } from './vnode.js'
     )
 
     8. 包含属性, 多个子元素的元素节点, 如果一个元素中包含其他元素节点或者文本节点, 应该这样指定
+    * * 在Vue2中, 只有第8和第2种情况
     h(
         "div",
         { id: 'article', class: 'center' },
@@ -74,7 +76,7 @@ import { vnode } from './vnode.js'
     )
 
  */
-export function h(sel, b, ...c) {
+export function h(sel, b, c) {
   let data = {}
   let children
   let text
@@ -119,6 +121,7 @@ export function h(sel, b, ...c) {
     for (i = 0; i < children.length; i++) {
       if (isPrimitive(children[i])) {
         // 如果子元素是字符串或者数字, 则将其转为
+        // * 这里对应vue中的_v函数, 生成文本虚拟节点
         children[i] = vnode(
           undefined,
           undefined,

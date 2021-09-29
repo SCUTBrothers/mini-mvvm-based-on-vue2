@@ -6,19 +6,38 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        #title {}
+    </style>
 </head>
 
 <body>
-    <h1 id="test">
-        <div class="red center">
-            hello, {{name}} , {{message}}
-        </div>
-        <p>
+    <h1 id="title">
+        this is a title
+        <div>
             some text
-        </p>
+        </div>
     </h1>
 
-    <script type="module" src="./src/compile/notes/compile__test___.js"></script>
+    <script>
+        // textContent和innerText测试
+        const title = document.getElementById("title")
+        // * 获取当前title的textContent, innerText值
+        // * 获取其内部文本节点, 并将文本节点的值与textContent, innerText进行比较
+        let textContent = title.textContent
+        let innerText = title.innerText
+        let textNode = title.childNodes[0]
+        console.log(`textcontent is ${textContent}`)
+        console.log(`innerText is ${innerText}`)
+        console.log(title.childNodes)
+        console.log(textNode.innerText)
+        console.log(textNode.textContent)
+
+        // 赋值修改
+        title.textContent = "textContent changed"
+        console.log(`textContent is ${title.textContent}`)
+        console.log(`innertext is ${title.innerText}`)
+    </script>
 </body>
 
 </html>

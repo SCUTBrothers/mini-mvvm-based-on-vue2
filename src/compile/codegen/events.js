@@ -1,10 +1,29 @@
+const fnExpRE = /^([\w$_]+|\([^)]*?\))\s*=>|^function(?:\s+[\w$]+)?\s*\(/
+const fnInvokeRE = /\([^)]*?\);*$/
+const simplePathRE =
+  /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['[^']*?']|\["[^"]*?"]|\[\d+]|\[[A-Za-z_$][\w$]*])*$/
+
 function genHandler(handler) {
   if (!handler) {
     return 'function(){}'
   }
-  // 由于没有modifier, 或者是使用路径, 如click = "a[b][c]", 而是直接使用methods当中的键名
-  // 所以直接返回就好了
-  return handler
+
+  const isMethodPath = simplePathRE.test(handler)
+  const isFunctionExpression = fnExpRE.test(handler)
+  const isFunctionInvocation = simplePathRE.test(
+    handler.replace(fnInvokeRE, '')
+  )
+
+  // 不处理modifier
+  if (isMethodPath || isFunctionExpression) {
+    // 如"clickMethod"这种, isMethodPath = true
+    // * "value=$event.target.value", isMethod = isFunctionExpresion = isFunctionInvocation = true
+    return handler
+  }
+
+  return `function($event) {
+        ${isFunctionInvocation ? `return ${handler}` : handler}
+    }`
 }
 
 /**

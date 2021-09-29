@@ -141,6 +141,7 @@ export function init(modules, domApi) {
   }
 
   function patchVnode(oldVnode, vnode, insertedVnodeQueue) {
+    // * 1. 判断vnode是否有text属性
     let parent = oldVnode.elm.parentElement
     vnode.elm = oldVnode.elm
 
@@ -220,6 +221,7 @@ function isVnode(vnode) {
 
 // todo
 function sameVnode(vnode1, vnode2) {
+  // ? 当vnode1和vnode2的标签相同, key都为undefined, 这里也返回true
   return vnode1.sel === vnode2.sel && vnode1.key === vnode2.key
 }
 

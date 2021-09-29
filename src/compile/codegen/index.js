@@ -32,8 +32,16 @@ function genElement(el, state) {
   return code
 }
 
-function genData(el) {
+function genData(el, state) {
   let data = '{'
+
+  /**
+   * 先解析directives, 因为如v-model="<xxx>"这种directive, 会给el.props传value: "value", 然后给el.nativeEvents传递"input": "<xxx>"句柄
+   * 而el.props和el.nativeEvents对象都将在后面的if语句中转为字符串形式
+   * 所以就如前面所说的, 要先解析directives, 这样就不会漏掉
+   */
+  const dirs = genDirectives(el, state)
+  if (dirs) data += dirs + ','
 
   if (el.nativeEvents) {
     // 单种事件, v-on: click = "clickHandler"
@@ -49,7 +57,6 @@ function genData(el) {
 
   // 将最后的","通过正则替换删掉
   data = data.replace(/,$/, '') + '}'
-  console.log(`data is ${data}`)
   return data
 }
 
@@ -57,8 +64,6 @@ function genProps(props) {
   let staticProps = ``
   for (let i = 0; i < props.length; i++) {
     const prop = props[i]
-    console.log(`----prop is ${prop}`)
-    console.log(prop)
     staticProps += `${prop.name}:${prop.value},`
   }
   staticProps = `{${staticProps.slice(0, -1)}}`
@@ -71,9 +76,9 @@ function genDirectives(el, state) {
 
   let res = 'directives: ['
 
+  let dir
   for (let i = 0, l = dirs.length; i < l; i++) {
     dir = dirs[i]
-    // gen: DirectiveFunction 用于生成相应的指令的赋值代码, 如on => _g(...), bind => _b(...)
     const gen = state.directives[dir.name]
     /**
      * res = [{
@@ -91,6 +96,7 @@ function genDirectives(el, state) {
      */
 
     if (gen) {
+      gen(el, dir)
       res += `{name: "${dir.name}", rawName:"${dir.rawName}"${
         dir.value
           ? `,value:(${dir.value}),expresion: ${JSON.stringify(dir.value)}`
@@ -99,15 +105,12 @@ function genDirectives(el, state) {
     }
   }
 
-  // res.slice(0, -1) 相当于res.slice(0, res.length - 1), 最后一个,不会被保留
-  return res.slice(0, -1) + ']'
+  // 去掉最后一个",", 如果有的话
+  return res.replace(/,$/, '') + ']'
 }
 
 function genChildren(el, state) {
   const children = el.children
-  if (!children) {
-    console.log(el)
-  }
   if (children.length) {
     return `[${children
       .map((c) => {
