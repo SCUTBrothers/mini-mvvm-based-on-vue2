@@ -126,6 +126,9 @@ export function init(modules, domApi) {
     return map
   }
 
+  /**
+   * * oldCh和newCh的长度要都>0
+   */
   function udpateChildren(parentElm, oldCh, newCh, insertedVnodeQueue) {
     // ! 重点, diffing算法, 比较子节点差异
 
@@ -145,6 +148,7 @@ export function init(modules, domApi) {
     let elmToMove
     let before
 
+    // * 如果oldCh和newCh其中有一个length为0, 那么都不会进入while循环, 没有diff的必要
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
       if (oldStartVnode == null) {
         // oldCh或newCh中可能会包含null,undefined值, 这种值直接跳过
@@ -197,7 +201,7 @@ export function init(modules, domApi) {
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
         }
         // newStartVnode.key为undefined时, idxInOld也返回undefined
-        idxInOld = oldKeyToIdx[newStartVnode.key]
+        idxInOld = newStartVnode.key && oldKeyToIdx[newStartVnode.key]
         if (idxInOld === undefined) {
           // newNode <div key = "A"> , oldKeyToIdx当中没有这个key, 说明该元素是新元素
           // 插入到oldCh startVnode顶部
@@ -358,13 +362,20 @@ export function init(modules, domApi) {
         //          不能使用innerText, 因为文本节点没有innerText属性
 
         elm.nodeValue = vnode.text
-      } else {
-        // 1.1 - no: 文本内容相同, 不用修改, 直接返回
       }
+      // 若文本内容相同, 不用修改, 直接返回
     } else if (oldCh && ch) {
       // ! oldVnode和vnode都具有children
-      // 递归patchVnode, 比较子级的vnode和oldVnode
-      if (oldCh !== ch) udpateChildren(elm, oldCh, ch, insertedVnodeQueue)
+      if (oldCh.length !== 0 && ch.length !== 0) {
+        // 递归patchVnode, 比较子级的vnode和oldVnode
+        if (oldCh !== ch) udpateChildren(elm, oldCh, ch, insertedVnodeQueue)
+      } else if (oldCh.length === 0) {
+        // oldCh = [], ch = [...]
+        addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
+      } else if (ch.length === 0) {
+        // oldCh = [...], ch = []
+        removeVnodes(elm, oldCh, 0, oldCh.length - 1)
+      }
     } else if (ch !== undefined) {
       // oldCh = undefined, ch = [...]
       addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
@@ -426,5 +437,16 @@ function sameVnode(vnode1, vnode2) {
   return vnode1.sel === vnode2.sel && vnode1.key === vnode2.key
 }
 
-// todo
-function createKeyToOldIdx(children, beginIdx, endIdx) {}
+function createKeyToOldIdx(children, beginIdx, endIdx) {
+  let map = {}
+  for (; beginIdx <= endIdx; beginIdx++) {
+    let ch
+    for (let i = 0; i < children.length; i++) {
+      ch = children[i]
+      if (ch.key) {
+        map[ch.key] = i
+      }
+    }
+  }
+  return map
+}

@@ -23,6 +23,10 @@
             <li>{{item.name}}</li>
         </ul>
         <button v-on:click="clickMethod">点击改变items</button>
+        <br />
+        <input type="text" v-if="isText" key="text">
+        <input type="email" v-else key="email">
+        <button v-on:click="switchMethod">点击切换input类型</button>
     </div>
 
     <script type="module">
@@ -48,7 +52,8 @@
                         name: "banana",
                         price: 1
                     },
-                ]
+                ],
+                isText: false
             },
             methods: {
                 clickMethod() {
@@ -58,6 +63,9 @@
                         price: 10
                     })
                 },
+                switchMethod() {
+                    this.isText = !this.isText
+                }
             }
         })
     </script>
