@@ -12,7 +12,7 @@ methods.forEach((method) => {
     let inserted
     switch (method) {
       case 'push':
-      case 'unshit':
+      case 'unshift':
         inserted = args
         break
       case 'splice':
