@@ -24,9 +24,10 @@
         </ul>
         <button v-on:click="clickMethod">点击改变items</button>
         <br />
-        <input type="text" v-if="isText" key="text">
+        <input type="text" v-if="isText" key="text" v-model="name">
         <input type="email" v-else key="email">
         <button v-on:click="switchMethod">点击切换input类型</button>
+        <p>{{name}}</p>
     </div>
 
     <script type="module">
@@ -53,7 +54,16 @@
                         price: 1
                     },
                 ],
-                isText: false
+                isText: false,
+                name: "Nicholas",
+                count: 1
+            },
+            watch: {
+                count: function (oldValue, newValue) {
+                    console.log("👁️‍🗨️ watcher of count called")
+                    console.log(`count is changed from ${oldValue} to ${newValue}`)
+                }
+
             },
             methods: {
                 clickMethod() {
@@ -68,6 +78,7 @@
                 }
             }
         })
+        app.count = 2
     </script>
 </body>
 

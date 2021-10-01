@@ -14,6 +14,9 @@ export function initState(vm) {
   if (options.methods) {
     initMethods(vm)
   }
+  if (options.watch) {
+    initWatch(vm)
+  }
 }
 
 const noop = () => {}
@@ -110,5 +113,47 @@ function initMethods(vm) {
   const methods = vm.$options.methods
   for (const key in methods) {
     vm[key] = methods == null ? noop : methods[key].bind(vm)
+  }
+}
+
+function initWatch(vm) {
+  const watchs = vm.$options.watch
+  for (const key in watchs) {
+    const handler = watchs[key]
+    if (Array.isArray(handler)) {
+      // watchTarget: [..., ..., ...(handlers)]
+      for (let i = 0; i < handler.length; i++) {
+        createWatcher(vm, key, handler)
+      }
+    } else {
+      // 字符串, 数组, 对象
+      createWatcher(vm, key, handler)
+    }
+  }
+}
+
+function createWatcher(vm, key, handler, options = {}) {
+  // watchTarget: {imediate: true, sync: true, handler: () => {...}, ...}
+  if (typeof handler == 'object') {
+    options = handler
+    handler = handler.handler
+  }
+  if (typeof handler == 'string') {
+    // watchTarget: "some method"
+    handler = vm[handler]
+  }
+  return vm.$watch(key, handler, options)
+}
+
+export function stateMixin(Vue) {
+  Vue.prototype.$watch = function (expOrFn, cb, options = {}) {
+    console.log(this)
+    // 代表是用户watcher
+    options.user = true
+    const watcher = new Watcher(this, expOrFn, cb, options)
+
+    if (options.immediate) {
+      cb()
+    }
   }
 }
