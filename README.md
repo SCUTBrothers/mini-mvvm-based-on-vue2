@@ -43,14 +43,15 @@ vue2源码包含很多为了兼容边缘情况和实现高级功能的代码, �
   - [x] 模板编译
   - [x] render函数生成 
   - [x] vnode
-- [ ] patch中的diff算法
+- [x] watch
+- [x] patch中的diff算法
+- [x] lifeCycle hooks
 
 **todo**
 
 Vue2
 
 - [ ] Vue.set
-- [ ] watch
 - [ ] nextTick
 - [ ] mixins
 - [ ] vdom/modules

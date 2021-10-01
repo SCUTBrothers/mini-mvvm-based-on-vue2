@@ -6,7 +6,7 @@ export default class Watcher {
   constructor(vm, expOrFn, cb, options = {}) {
     this.id = id++
     this.vm = vm
-    this.cb = cb
+    this.cb = cb ? cb : () => {}
 
     console.log(
       `create watcher instance, id is ${this.id}, target is ${expOrFn}`
@@ -77,6 +77,9 @@ export default class Watcher {
 
     if (this.user) {
       this.cb(oldValue, newValue)
+    } else {
+      // 渲染watcher
+      this.cb()
     }
   }
 

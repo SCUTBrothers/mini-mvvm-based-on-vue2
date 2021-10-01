@@ -1,6 +1,6 @@
 import { compileToRenderFunction } from '../compile/index.js'
 import { initState } from '../state.js'
-import { mountComponent } from './lifecycle.js'
+import { initLifeCycle, mountComponent } from './lifecycle.js'
 
 let uid = 0
 export function initMixin(Vue) {
@@ -10,8 +10,11 @@ export function initMixin(Vue) {
     vm.$options = options
     this._uid = uid++
 
-    // beforeCreated hook, 数据初始化前
+    initLifeCycle(vm)
+
+    vm.callHook('beforeCreated')
     initState(vm)
+    vm.callHook('created')
 
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
@@ -73,7 +76,7 @@ export function initMixin(Vue) {
       options.render = render
     }
 
-    // todo "beforeMount" hook
+    vm.callHook('beforeMount')
     mountComponent(vm, el)
   }
 }

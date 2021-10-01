@@ -76,6 +76,24 @@
                 switchMethod() {
                     this.isText = !this.isText
                 }
+            },
+            beforeCreated() {
+                console.log("🏒 vm实例数据初始化前, beforeCreated hook")
+            },
+            created() {
+                console.log("🏘️ vm实例数据初始化完毕, created Hook")
+            },
+            beforeMount() {
+                console.log("🌱 实例挂载前, beforeMount hook")
+            },
+            beforeUpdate() {
+                console.log("⚒️ vnode及元素patch更新前, beforeUpdate hook")
+            },
+            updated() {
+                console.log("🔅 vnode更新完成, 更新元素节点数据, 已创建或移除不同的节点, updated hook")
+            },
+            mounted() {
+                console.log("🌲  基于vnode构建的元素节点全部挂载完毕, mounted hook")
             }
         })
         app.count = 2

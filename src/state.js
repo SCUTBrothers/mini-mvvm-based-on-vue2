@@ -147,7 +147,6 @@ function createWatcher(vm, key, handler, options = {}) {
 
 export function stateMixin(Vue) {
   Vue.prototype.$watch = function (expOrFn, cb, options = {}) {
-    console.log(this)
     // 代表是用户watcher
     options.user = true
     const watcher = new Watcher(this, expOrFn, cb, options)
