@@ -52,6 +52,7 @@ export default class Watcher {
       `get method of watcher will execute next. (target of watcher is ${this.getter.name}), id is ${this.id}`
     )
 
+    // get重新收集依赖
     pushTarget(this)
     let result = this.getter.call(this.vm)
     popTarget(this)
@@ -85,6 +86,8 @@ export default class Watcher {
 
   evaluate() {
     console.log(`watcher.evalu被调用, 计算属性的值将重新进行计算`)
+    // 拷贝老的deps和老的depIds
+    // 将deps和depIds进行清空, 重新收集依赖
     let oldDeps = this.deps.slice()
     let oldDepIds = this.depIds.slice()
     this.deps = []
@@ -135,6 +138,7 @@ let pending = false
 let has = {}
 function queueWatcher(watcher) {
   if (has[watcher.id] == null) {
+    // 
     queue.push(watcher)
     has[watcher.id] = true
 
